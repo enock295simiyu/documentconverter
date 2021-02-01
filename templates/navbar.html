@@ -1,0 +1,36 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">Navbar</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item active">
+        <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+      </li>
+
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Convert PDF
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <a class="dropdown-item" href="{% url 'jpg_to_pdf' %}">JPG to PDF</a>
+          <a class="dropdown-item" href="{% url 'word_to_pdf' %}">WORD to PDF</a>
+          <a class="dropdown-item" href="{% url 'pptx_to_pdf' %}">PPTX to PDF</a>
+          <a class="dropdown-item" href="{% url 'html_to_pdf' %}">HTML to PDF</a>
+          <a class="dropdown-item" href="{% url 'excel_to_pdf' %}">EXCEL to PDF</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{% url 'pdf_to_jpg' %}">PDF to JPG</a>
+          <a class="dropdown-item" href="{% url 'pdf_to_word' %}">PDF to WORD</a>
+          <a class="dropdown-item" href="{% url 'pdf_to_pptx' %}">PDF to PPTX</a>
+          <a class="dropdown-item" href="{% url 'pdf_to_html' %}">PDF to HTML</a>
+          <a class="dropdown-item" href="{% url 'pdf_to_excel' %}">PDF to EXCEL</a>
+        </div>
+      </li>
+
+
+    </ul>
+
+  </div>
+</nav>

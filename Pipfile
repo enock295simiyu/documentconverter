@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "*"
+pillow = "*"
+pdf2image = "*"
+docx2pdf = "*"
+pdfkit = "*"
+xhtml2pdf = "*"
+pywin32 = "*"
+pypiwin32 = "*"
+pypdf2 = "*"
+img2pdf = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
