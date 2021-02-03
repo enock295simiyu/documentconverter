@@ -1,3 +1,5 @@
+from zipfile import ZipFile
+
 from PIL import Image
 from pdf2image import convert_from_path
 from docx2pdf import convert
@@ -7,8 +9,12 @@ import traceback
 import PyPDF2
 import os
 import img2pdf
+import pdftotree
 from documentconverter.settings import MEDIA_ROOT
 from fpdf import FPDF
+from pdf2docx import parse
+import glob
+import tqdm
 
 
 class Converter:
@@ -26,10 +32,16 @@ class ImageDocuments(Converter):
 
         name, extension = self.get_document_name_and_extension(image_path)
         new_file_name = name + '.pdf'
+
+        command = 'convert ' + image_path + ' -background white -alpha remove -alpha off ' + name+'convert .'+extension
+
+        os.system(command)
         pdf_path = os.path.join(MEDIA_ROOT, 'pdf')
         location_path = os.path.join(pdf_path, new_file_name)
         image = Image.open(image_path)
+
         pdf_bytes = img2pdf.convert(image.filename)
+        print(location_path)
         file = open(location_path, 'wb')
         file.write(pdf_bytes)
         image.close()
@@ -37,17 +49,45 @@ class ImageDocuments(Converter):
         return location_path
 
     def convert_pdf_to_img(self, pdf_path):
+
         images = convert_from_path(pdf_path)
         name, extension = self.get_document_name_and_extension(pdf_path)
         image_paths = []
         for counter, img in enumerate(images):
-            img.save(name + '_page(' + str(counter) + '.jpg', 'JPEG')
-            image_paths.append(img)
-        return image_paths
+            image_name=name + '_page(' + str(counter) + '.jpg'
+            img.save(image_name, 'JPEG')
+            image_paths.append(image_name)
+        new_filename = name + '.' + 'zip'
+        location_path = os.path.join(MEDIA_ROOT, new_filename)
+        zipObj=ZipFile(location_path,'w')
+
+        for item in image_paths:
+            print(item)
+            print(type(item))
+            zipObj.write(item)
+        zipObj.close()
+        return location_path
 
 
 class PowerPoint(Converter):
-    pass
+    def convert_powerpoint_to_pdf(self,document_path):
+        name, extension = self.get_document_name_and_extension(document_path)
+        new_filename = name + '.' + 'pdf'
+        location_path = os.path.join(MEDIA_ROOT, new_filename)
+        command = "unoconv -f pdf -t template.pptx -o " + location_path + ' ' + document_path
+
+        os.system(command)
+        return location_path
+
+    def convert_pdf_to_powerpoint(self,document_path):
+        name, extension = self.get_document_name_and_extension(document_path)
+        new_filename = name + '.' + 'pptx'
+        location_path = os.path.join(MEDIA_ROOT, new_filename)
+
+        command = "unoconv -f ppt -t template.pdf -o " + location_path + ' ' + document_path
+        os.system(command)
+        return location_path
+
 
 
 class Word(Converter):
@@ -64,58 +104,52 @@ class Word(Converter):
             pdf.set_font('Arial', size=15)
             pdf.cell(200, 10, txt=pdf_text, ln=1, align='C')
             name, extension = self.get_document_name_and_extension(document_path)
-            new_filename = name + '.' + extension
+            new_filename = name + '.' + 'pdf'
             location_path = os.path.join(MEDIA_ROOT, new_filename)
             pdf.output(location_path)
             return location_path
 
     def convert_pdf_to_word(self, document_path):
-       pass
+        name, extension = self.get_document_name_and_extension(document_path)
+        new_filename = name + '.' + 'docx'
+        location_path = os.path.join(MEDIA_ROOT, new_filename)
+        parse(document_path,location_path)
+        return location_path
 
 
-'''class Excell(Converter):
+
+class Excell(Converter):
     def convert_excel_to_pdf(self, document_path):
-        path_to_pdf = 'E:\project\documentconverter\static\images\text_emotion.pdf'
-        excel = win32com.client.Dispatch("Excel.Application")
+        name, extension = self.get_document_name_and_extension(document_path)
+        new_filename = name + '.' + 'pdf'
+        location_path = os.path.join(MEDIA_ROOT, new_filename)
+        command = "unoconv -f pdf -t template.xls -o "+location_path+' '+document_path
+        os.system(command)
+        return location_path
 
-        excel.Visible = False
-        try:
-            print('Start conversion to PDF')
-
-            # Open
-            wb = excel.Workbooks.Open(document_path)
-
-            # Specify the sheet you want to save by index. 1 is the first (leftmost) sheet.
-            ws_index_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-            wb.WorkSheets(ws_index_list).Select()
-
-            # Save
-            wb.ActiveSheet.ExportAsFixedFormat(0, path_to_pdf)
-            wb.Close()
-            excel.Quit()
-        except com_error as e:
-            print('failed.')
-            logging.error(traceback.format_exc())
-        else:
-            print('Succeeded.')'''
+    def convert_pdf_to_excell(self,document_path):
+        name, extension = self.get_document_name_and_extension(document_path)
+        new_filename = name + '.' + 'xls'
+        location_path = os.path.join(MEDIA_ROOT, new_filename)
+        command = "unoconv -f xls -t template.pdf -o " + location_path + ' ' + document_path
+        os.system(command)
+        return location_path
 
 
 class HTML(Converter):
     def convert_html_to_pdf(self, document_path):
-        pdfkit.from_file(document_path, 'E:\project\documentconverter\static\images\sample.pdf')
+        name, extension = self.get_document_name_and_extension(document_path)
+        new_filename = name + '.' + 'pdf'
+        location_path = os.path.join(MEDIA_ROOT, new_filename)
+        pdfkit.from_file(document_path, location_path)
+        return location_path
+
+    def convert_pdf_to_html(self,document_path):
+        name, extension = self.get_document_name_and_extension(document_path)
+        new_filename = name + '.' + 'html'
+        location_path = os.path.join(MEDIA_ROOT, new_filename)
+
+        pdftotree.parse(document_path,html_path=location_path,model_type=None,model_path=None,visualize=False)
+        return location_path
 
 
-# object=Converter('E:\project\documentconverter\static\images\image1.png')
-# object.convert_img_to_pdf('E:\project\documentconverter\static\images\image1.png')
-# object=ImageDocuments()
-# object.convert_pdf_to_img('E:\project\documentconverter\static\images\1xbot.pdf')
-
-# object=Word()
-# object.covert_docx_to_pdf('E:\project\documentconverter\static\images\CHAPTER.docx')
-
-# object=HTML()
-# object.convert_html_to_pdf('E:\project\documentconverter\static\images\index.html')
-
-'''object = Excell()
-object.convert_excel_to_pdf('E:\project\documentconverter\static\images\text_emotion.xlsx')
-'''
