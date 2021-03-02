@@ -11,6 +11,7 @@ from django.urls import reverse
 from urllib.parse import urlencode
 import ntpath
 from zipfile import ZipFile
+from django.contrib import messages
 
 
 
@@ -23,6 +24,12 @@ from core.forms import DocumentForm
 from core.main import ImageDocuments, Word, HTML, PowerPoint, Excell
 from documentconverter.settings import BASE_DIR
 
+
+def validate_file_extension(extension:str,filename:str):
+    if filename.endswith(extension):
+        return True
+    else:
+        return False
 
 def home(request):
     template = 'index.html'
@@ -45,17 +52,27 @@ def upload_document(request):
 
         return final_url
 
+def wrong_file_uploaded(request):
+    pass
 
 def pdf_to_jpg(request):
     if request.method == 'POST':
-        upload_file_url = upload_document(request)
 
-        document = ImageDocuments()
-        image_path = document.convert_pdf_to_img(upload_file_url)
-        download_base = reverse('download')
-        query_string = urlencode({'file_url': image_path})
-        url = '{}?{}'.format(download_base, query_string)
-        return redirect(url)
+
+        upload_file_url = upload_document(request)
+        extension = '.pdf'
+        is_extension_correct = validate_file_extension(extension,upload_file_url )
+        if is_extension_correct:
+
+            document = ImageDocuments()
+            image_path = document.convert_pdf_to_img(upload_file_url)
+            download_base = reverse('download')
+            query_string = urlencode({'file_url': image_path})
+            url = '{}?{}'.format(download_base, query_string)
+            return redirect(url)
+        else:
+            messages.success(request, 'Incorrect file format. The only file accepted ends with .pdf')
+            return redirect('/pdf_to_jpg')
 
     template = 'upload.html'
 
@@ -65,12 +82,18 @@ def pdf_to_jpg(request):
 def pdf_to_word(request):
     if request.method=='POST':
         upload_file_url = upload_document(request)
-        document=Word()
-        image_path=document.convert_pdf_to_word(upload_file_url)
-        download_base = reverse('download')
-        query_string = urlencode({'file_url': image_path})
-        url = '{}?{}'.format(download_base, query_string)
-        return redirect(url)
+        extension='.pdf'
+        is_extension_correct = validate_file_extension(extension, upload_file_url)
+        if is_extension_correct:
+            document=Word()
+            image_path=document.convert_pdf_to_word(upload_file_url)
+            download_base = reverse('download')
+            query_string = urlencode({'file_url': image_path})
+            url = '{}?{}'.format(download_base, query_string)
+            return redirect(url)
+        else:
+            messages.success(request, 'Incorrect file format. The only file accepted ends with .pdf')
+            return redirect('/pdf_to_word')
 
     template = 'upload.html'
     return render(request, template)
@@ -79,12 +102,18 @@ def pdf_to_word(request):
 def pdf_to_pptx(request):
     if request.method=='POST':
         upload_file_url=upload_document(request)
-        document=PowerPoint()
-        image_path=document.convert_pdf_to_powerpoint(upload_file_url)
-        download_base = reverse('download')
-        query_string = urlencode({'file_url': image_path})
-        url = '{}?{}'.format(download_base, query_string)
-        return redirect(url)
+        extension = '.pdf'
+        is_extension_correct = validate_file_extension(extension, upload_file_url)
+        if is_extension_correct:
+            document=PowerPoint()
+            image_path=document.convert_pdf_to_powerpoint(upload_file_url)
+            download_base = reverse('download')
+            query_string = urlencode({'file_url': image_path})
+            url = '{}?{}'.format(download_base, query_string)
+            return redirect(url)
+        else:
+            messages.success(request, 'Incorrect file format. The only file accepted ends with .pdf')
+            return redirect('/pdf_to_pptx')
 
     template = 'upload.html'
     return render(request, template)
@@ -94,12 +123,19 @@ def pdf_to_html(request):
     if request.method=='POST':
 
         upload_file_url = upload_document(request)
-        document=HTML()
-        image_path=document.convert_pdf_to_html(upload_file_url)
-        download_base = reverse('download')
-        query_string = urlencode({'file_url': image_path})
-        url = '{}?{}'.format(download_base, query_string)
-        return redirect(url)
+        extension = '.pdf'
+        is_extension_correct = validate_file_extension(extension, upload_file_url)
+        if is_extension_correct:
+            document=HTML()
+            image_path=document.convert_pdf_to_html(upload_file_url)
+            download_base = reverse('download')
+            query_string = urlencode({'file_url': image_path})
+            url = '{}?{}'.format(download_base, query_string)
+            return redirect(url)
+        else:
+            messages.success(request, 'Incorrect file format. The only file accepted ends with .pdf')
+            return redirect('/pdf_to_html')
+
     template = 'upload.html'
     return render(request, template)
 
@@ -108,14 +144,20 @@ def jpg_to_pdf(request):
     if request.method == 'POST':
 
         upload_file_url = upload_document(request)
+        extension = '.jpg'
+        is_extension_correct = validate_file_extension(extension, upload_file_url)
+        if is_extension_correct:
 
-        document = ImageDocuments()
-        image_path = document.convert_img_to_pdf(upload_file_url)
+            document = ImageDocuments()
+            image_path = document.convert_img_to_pdf(upload_file_url)
 
-        download_base=reverse('download')
-        query_string=urlencode({'file_url':image_path})
-        url='{}?{}'.format(download_base,query_string)
-        return redirect(url)
+            download_base=reverse('download')
+            query_string=urlencode({'file_url':image_path})
+            url='{}?{}'.format(download_base,query_string)
+            return redirect(url)
+        else:
+            messages.success(request, 'Incorrect file format. The only file accepted ends with .jpg')
+            return redirect('/pdf_to_jpg')
 
     template = 'upload.html'
     return render(request, template)
@@ -124,12 +166,18 @@ def jpg_to_pdf(request):
 def word_to_pdf(request):
     if request.method=='POST':
         upload_file_url=upload_document(request)
-        document=Word()
-        new_document_path=document.covert_docx_to_pdf(upload_file_url)
-        download_base=reverse('download')
-        query_string=urlencode({'file_url':new_document_path})
-        url='{}?{}'.format(download_base,query_string)
-        return redirect(url)
+        extension = '.docx'
+        is_extension_correct = validate_file_extension(extension, upload_file_url)
+        if is_extension_correct:
+            document=Word()
+            new_document_path=document.covert_docx_to_pdf(upload_file_url)
+            download_base=reverse('download')
+            query_string=urlencode({'file_url':new_document_path})
+            url='{}?{}'.format(download_base,query_string)
+            return redirect(url)
+        else:
+            messages.success(request, 'Incorrect file format. The only file accepted ends with .docx')
+            return redirect('/pdf_to_jpg')
     template = 'upload.html'
     return render(request, template)
 
@@ -137,12 +185,18 @@ def word_to_pdf(request):
 def pptx_to_pdf(request):
     if request.method=='POST':
         upload_file_url = upload_document(request)
-        document = PowerPoint()
-        new_document_path = document.convert_powerpoint_to_pdf(upload_file_url)
-        download_base = reverse('download')
-        query_string = urlencode({'file_url': new_document_path})
-        url = '{}?{}'.format(download_base, query_string)
-        return redirect(url)
+        extension = '.pptx'
+        is_extension_correct = validate_file_extension(extension, upload_file_url)
+        if is_extension_correct:
+            document = PowerPoint()
+            new_document_path = document.convert_powerpoint_to_pdf(upload_file_url)
+            download_base = reverse('download')
+            query_string = urlencode({'file_url': new_document_path})
+            url = '{}?{}'.format(download_base, query_string)
+            return redirect(url)
+        else:
+            messages.success(request, 'Incorrect file format. The only file accepted ends with .pptx')
+            return redirect('/pdf_to_jpg')
 
     template = 'upload.html'
     return render(request, template)
@@ -158,12 +212,18 @@ def excel_to_pdf(request):
     if request.method=='POST':
 
         upload_file_url = upload_document(request)
-        document=Excell()
-        new_document_path=document.convert_excel_to_pdf(upload_file_url)
-        download_base = reverse('download')
-        query_string = urlencode({'file_url': new_document_path})
-        url = '{}?{}'.format(download_base, query_string)
-        return redirect(url)
+        extension = '.xls'
+        is_extension_correct = validate_file_extension(extension, upload_file_url)
+        if is_extension_correct:
+            document=Excell()
+            new_document_path=document.convert_excel_to_pdf(upload_file_url)
+            download_base = reverse('download')
+            query_string = urlencode({'file_url': new_document_path})
+            url = '{}?{}'.format(download_base, query_string)
+            return redirect(url)
+        else:
+            messages.success(request, 'Incorrect file format. The only file accepted ends with .xsl')
+            return redirect('/pdf_to_jpg')
 
     template = 'upload.html'
     return render(request, template)
@@ -172,12 +232,18 @@ def excel_to_pdf(request):
 def pdf_to_excel(request):
     if request.method == 'POST':
         upload_file_url = upload_document(request)
-        document = Excell()
-        new_document_path = document.convert_pdf_to_excell(upload_file_url)
-        download_base = reverse('download')
-        query_string = urlencode({'file_url': new_document_path})
-        url = '{}?{}'.format(download_base, query_string)
-        return redirect(url)
+        extension = '.pdf'
+        is_extension_correct = validate_file_extension(extension, upload_file_url)
+        if is_extension_correct:
+            document = Excell()
+            new_document_path = document.convert_pdf_to_excell(upload_file_url)
+            download_base = reverse('download')
+            query_string = urlencode({'file_url': new_document_path})
+            url = '{}?{}'.format(download_base, query_string)
+            return redirect(url)
+        else:
+            messages.success(request, 'Incorrect file format. The only file accepted ends with .pdf')
+            return redirect('/pdf_to_jpg')
     template = 'upload.html'
     return render(request, template)
 
